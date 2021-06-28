@@ -1,11 +1,9 @@
 extern crate rustyline;
 
-use std::io;
-use std::io::{LineWriter, Write};
+mod reader;
+mod tokenizer;
 
-fn read(input: &str) -> &str {
-    return input;
-}
+use reader::read;
 
 fn eval(input: &str) -> &str {
     return input;
