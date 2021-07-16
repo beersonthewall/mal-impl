@@ -22,7 +22,6 @@ pub enum Token {
 pub struct Tokenizer<'a> {
     input: Peekable<Chars<'a>>,
 }
-
 impl Tokenizer<'_> {
     pub fn new(input: &str) -> Tokenizer {
         Tokenizer {
@@ -30,7 +29,23 @@ impl Tokenizer<'_> {
         }
     }
 
-    pub fn next(&mut self) -> Option<Token> {
+    pub fn get_all(&mut self) -> Vec<Token> {
+        let mut tokens: Vec<Token> = Vec::new();
+        loop {
+            let maybe_tkn = self.next();
+            if let Some(token) = maybe_tkn {
+                tokens.push(token);
+            } else {
+                return tokens;
+            }
+        }
+    }
+}
+
+impl Iterator for Tokenizer<'_> {
+    type Item = Token;
+
+    fn next(&mut self) -> Option<Token> {
         loop {
             let c = if let Some(c) = self.input.next() {
                 c
@@ -115,18 +130,6 @@ impl Tokenizer<'_> {
                     }
                     return Some(Token::NONSPECIAL(data.into_iter().collect()));
                 }
-            }
-        }
-    }
-
-    pub fn get_all(&mut self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = Vec::new();
-        loop {
-            let maybe_tkn = self.next();
-            if let Some(token) = maybe_tkn {
-                tokens.push(token);
-            } else {
-                return tokens;
             }
         }
     }

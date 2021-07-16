@@ -2,8 +2,14 @@ extern crate rustyline;
 
 mod reader;
 mod tokenizer;
+mod types;
 
-use reader::read;
+use reader::read_str;
+
+pub fn read(input: &str) -> &str {
+    read_str(&input);
+    input
+}
 
 fn eval(input: &str) -> &str {
     return input;
@@ -25,3 +31,4 @@ fn main() {
         }
     }
 }
+
