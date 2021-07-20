@@ -14,7 +14,7 @@ pub enum Token {
     RBRACE,
     RCURLY,
     RPAREN,
-    STOOPID,
+    SPLICEUNQUOTE,
     STR(String),
     TILDE,
 }
@@ -59,7 +59,7 @@ impl Iterator for Tokenizer<'_> {
                 ',' => continue,
                 '~' => {
                     if self.input.next_if(|&x| x == '@').is_some() {
-                        return Some(Token::STOOPID);
+                        return Some(Token::SPLICEUNQUOTE);
                     } else {
                         return Some(Token::TILDE);
                     }
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn special_chars() {
         let mut t = Tokenizer::new("~@@~\'`");
-        assert!(matches!(t.next(), Some(Token::STOOPID)));
+        assert!(matches!(t.next(), Some(Token::SPLICEUNQUOTE)));
         assert!(matches!(t.next(), Some(Token::AT)));
         assert!(matches!(t.next(), Some(Token::TILDE)));
         assert!(matches!(t.next(), Some(Token::QUOTE)));

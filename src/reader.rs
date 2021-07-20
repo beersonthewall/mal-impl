@@ -5,7 +5,7 @@ use super::types::{MalType, MalList, MalAtom, MalSymbol};
 fn read_list(mut tokenizer: Peekable<Tokenizer<'_>>) -> MalList {
     // Throw away the lparen
     tokenizer.next();
-    
+
     loop {
         match read_form(tokenizer) {
             MalType::Atom(mal_atom) => {
@@ -18,7 +18,7 @@ fn read_list(mut tokenizer: Peekable<Tokenizer<'_>>) -> MalList {
 }
 
 pub fn read_str(input: &str) {
-    let mut tokenizer = Tokenizer::new(&input);
+    let tokenizer = Tokenizer::new(&input);
     read_form(tokenizer.peekable());
 }
 
