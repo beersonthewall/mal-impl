@@ -1,42 +1,60 @@
 use std::iter::Peekable;
 use super::tokenizer::{Tokenizer, Token};
-use super::types::{MalType, MalList, MalAtom, MalSymbol};
+use super::types::{MalType, MalList, MalAtom };
 
-fn read_list(mut tokenizer: Peekable<Tokenizer<'_>>) -> MalList {
+fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     // Throw away the lparen
     tokenizer.next();
-
+    let mut elements = Vec::<MalType>::new();
     loop {
-        match read_form(tokenizer) {
-            MalType::Atom(mal_atom) => {
-            },
-            _ => {},
+        let maybe_form = read_form(tokenizer);
+        
+        if let Some(form) = maybe_form {
+            elements.push(form);
+        } else if let Some(Token::RPAREN) = tokenizer.peek() {
+            // Toss right parenthesis
+            tokenizer.next();
+            return MalList::new(elements);
+        } else {
+            panic!("Error missing right parenthesis");
         }
-        break;
+
+        if let Some(Token::RPAREN) = tokenizer.peek() {
+            tokenizer.next();
+            return MalList::new(elements);
+        }
     }
-    MalList {}
 }
 
 pub fn read_str(input: &str) {
     let tokenizer = Tokenizer::new(&input);
-    read_form(tokenizer.peekable());
+    read_form(&mut tokenizer.peekable());
 }
 
-pub fn read_form(mut tokenizer: Peekable<Tokenizer<'_>>) -> MalType {
+pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
     
     let maybe_next = tokenizer.peek();
 
     match maybe_next {
-        Some(Token::LPAREN) => MalType::List(read_list(tokenizer)),
-        Some(_) => MalType::Atom(read_atom(tokenizer)),
-        None => MalType::Atom(MalAtom{}),
+        Some(Token::LPAREN) => Some(MalType::List(read_list(tokenizer))),
+        Some(_) => Some(MalType::Atom(read_atom(tokenizer))),
+        None => None,
     }
 }
 
-fn read_symbol(mut _tokenizer: Peekable<Tokenizer<'_>>) -> MalSymbol {
-    MalSymbol {}
+fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
+
+    match tokenizer.next() {
+        Some(Token::NONSPECIAL(_)) => {
+            
+        },
+        Some(_) => {},
+        None => {},
+    }
+    MalAtom {}
 }
 
-fn read_atom(mut _tokenizer: Peekable<Tokenizer<'_>>) -> MalAtom {
-    MalAtom {}
+
+#[cfg(test)]
+mod tests {
 }
