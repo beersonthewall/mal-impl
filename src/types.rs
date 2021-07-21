@@ -5,8 +5,14 @@ pub enum MalType {
     Atom(MalAtom),
 }
 
-pub struct MalList;
-
+pub struct MalList {
+    elements: Vec<MalType>,
+}
+impl MalList {
+    pub fn new(elements: Vec<MalType>) -> MalList {
+        MalList { elements }
+    }
+}
 pub struct MalSymbol;
 
 pub struct MalAtom;
