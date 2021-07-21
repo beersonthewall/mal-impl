@@ -28,18 +28,6 @@ impl Tokenizer<'_> {
             input: input.chars().peekable(),
         }
     }
-
-    pub fn get_all(&mut self) -> Vec<Token> {
-        let mut tokens: Vec<Token> = Vec::new();
-        loop {
-            let maybe_tkn = self.next();
-            if let Some(token) = maybe_tkn {
-                tokens.push(token);
-            } else {
-                return tokens;
-            }
-        }
-    }
 }
 
 impl Iterator for Tokenizer<'_> {
