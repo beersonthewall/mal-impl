@@ -3,6 +3,7 @@ extern crate rustyline;
 mod reader;
 mod tokenizer;
 mod types;
+mod mal_error;
 
 use reader::read_str;
 
