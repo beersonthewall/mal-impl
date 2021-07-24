@@ -3,16 +3,18 @@ use super::tokenizer::{Tokenizer, Token};
 use super::types::{MalType, MalList, MalAtom };
 
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
-    // Throw away the lparen
-    tokenizer.next();
+    match tokenizer.next() {
+        Some(token) if token != Token::LPAREN => panic!("Error read_list: Called without beginning left parenthesis."),
+        _ => {},
+    }
+
     let mut elements = Vec::<MalType>::new();
     loop {
         let maybe_form = read_form(tokenizer);
-        
+
         if let Some(form) = maybe_form {
             elements.push(form);
         } else if let Some(Token::RPAREN) = tokenizer.peek() {
-            // Toss right parenthesis
             tokenizer.next();
             return MalList::new(elements);
         } else {
@@ -60,8 +62,16 @@ mod tests {
 
     #[test]
     #[should_panic(expected = "Error read_list: missing end parenthesis for list")]
-    fn imbalanced_list_parens() {
+    fn read_list_no_end_paren() {
         let input = String::from("(1, 2, 3, 4");
         read_str(&input);
+    }
+
+    #[test]
+    #[should_panic(expected = "Error read_list: Called without beginning left parenthesis.")]
+    fn read_list_no_begin_paren() {
+        let input = String::from("1, 2, 3, 4)");
+        let tokenizer = Tokenizer::new(&input);
+        read_list(&mut tokenizer.peekable());
     }
 }
