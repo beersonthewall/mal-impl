@@ -1,11 +1,10 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum MalType {
     List(MalList),
-    Symbol(MalSymbol),
     Atom(MalAtom),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct MalList {
     elements: Vec<MalType>,
 }
@@ -16,8 +15,8 @@ impl MalList {
     }
 }
 
-#[derive(Debug)]
-pub struct MalSymbol;
-
-#[derive(Debug)]
-pub struct MalAtom;
+#[derive(Debug, PartialEq)]
+pub enum MalAtom {
+    Int(isize),
+    Symbol(String),
+}

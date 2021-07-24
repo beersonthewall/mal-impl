@@ -50,11 +50,18 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
 fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
     match tokenizer.next() {
-        Some(Token::NON_SPECIAL(value)) => {}
-        Some(token) => {}
-        None => {}
+        Some(Token::NON_SPECIAL(value)) => {
+            if let Ok(number) = value.parse::<isize>() {
+                MalAtom::Int(number)
+            } else {
+                MalAtom::Symbol(value)
+            }
+        },
+        Some(token) => {
+            MalAtom::Symbol(String::from(""))
+        },
+        None => panic!("read_atom called with next token == none"),
     }
-    MalAtom {}
 }
 
 #[cfg(test)]
