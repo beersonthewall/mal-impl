@@ -42,10 +42,7 @@ impl Iterator for Tokenizer<'_> {
                 return None;
             };
             match c {
-                ' ' => continue,
-                '\n' => continue,
-                '\t' => continue,
-                ',' => continue,
+                ' ' | '\n' | '\t' | ',' => continue,
                 '~' => {
                     if self.input.next_if(|&x| x == '@').is_some() {
                         return Some(Token::SPLICE_UNQUOTE);
