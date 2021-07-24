@@ -48,7 +48,7 @@ fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
         Some(Token::NON_SPECIAL(value)) => {
             
         },
-        Some(token) => panic!(""),
+        Some(token) => {},
         None => {},
     }
     MalAtom {}
@@ -56,4 +56,12 @@ fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "Error read_list: missing end parenthesis for list")]
+    fn imbalanced_list_parens() {
+        let input = String::from("(1, 2, 3, 4");
+        read_str(&input);
+    }
 }
