@@ -1,7 +1,7 @@
 use std::iter::Peekable;
 use std::str::Chars;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Token {
     AT,
     CARAT,
@@ -196,10 +196,10 @@ mod tests {
 
     #[test]
     fn non_special() {
-        let input = "true,false,nil variable_name\ta";
+        let input = "true,false,nil variable_name\ta 1234 -123";
         let mut t = Tokenizer::new(&input);
 
-        let expected = ["true", "false", "nil", "variable_name", "a"];
+        let expected = ["true", "false", "nil", "variable_name", "a", "1234", "-123"];
         for e in expected {
             let nxt = t.next();
             if let Some(Token::NON_SPECIAL(data)) = nxt {
@@ -226,6 +226,35 @@ mod tests {
             }
         }
         assert!(matches!(t.next(), Some(Token::RPAREN)));
+        assert!(matches!(t.next(), None));
+    }
+
+    #[test]
+    fn commas_as_whitespace() {
+        let input = "(1 2, 3,,,,),,";
+        let mut t = Tokenizer::new(&input);
+        assert!(matches!(t.next(), Some(Token::LPAREN)));
+        let expected = ["1", "2", "3"];
+        for e in expected {
+            let nxt = t.next();
+            if let Some(Token::NON_SPECIAL(data)) = nxt {
+                assert_eq!(e, data);
+            } else {
+                panic!("Next token {:?} did not match expected form.", nxt);
+            }
+        }
+        assert!(matches!(t.next(), Some(Token::RPAREN)));
+        assert!(matches!(t.next(), None));
+    }
+
+    #[test]
+    fn hash_maps() {
+        let input = "{ \"a\" 1 }";
+        let mut t = Tokenizer::new(&input);
+        assert!(matches!(t.next(), Some(Token::LCURLY)));
+        assert!(matches!(t.next(), Some(Token::STR(_))));
+        assert!(matches!(t.next(), Some(Token::NON_SPECIAL(_))));
+        assert!(matches!(t.next(), Some(Token::RCURLY)));
         assert!(matches!(t.next(), None));
     }
 }
