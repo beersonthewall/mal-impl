@@ -1,11 +1,13 @@
+use super::tokenizer::{Token, Tokenizer};
+use super::types::{MalAtom, MalList, MalType};
 use std::iter::Peekable;
-use super::tokenizer::{Tokenizer, Token};
-use super::types::{MalType, MalList, MalAtom };
 
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     match tokenizer.next() {
-        Some(token) if token != Token::LPAREN => panic!("Error read_list: Called without beginning left parenthesis."),
-        _ => {},
+        Some(token) if token != Token::LPAREN => {
+            panic!("Error read_list: Called without beginning left parenthesis.")
+        }
+        _ => {}
     }
 
     let mut elements = Vec::<MalType>::new();
@@ -18,7 +20,10 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
             tokenizer.next();
             return MalList::new(elements);
         } else {
-            panic!("Error read_list: missing end parenthesis for list {:?}", elements);
+            panic!(
+                "Error read_list: missing end parenthesis for list {:?}",
+                elements
+            );
         }
 
         if let Some(Token::RPAREN) = tokenizer.peek() {
@@ -34,7 +39,6 @@ pub fn read_str(input: &str) {
 }
 
 pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
-    
     let maybe_next = tokenizer.peek();
 
     match maybe_next {
@@ -45,13 +49,10 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 }
 
 fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
-
     match tokenizer.next() {
-        Some(Token::NON_SPECIAL(value)) => {
-            
-        },
-        Some(token) => {},
-        None => {},
+        Some(Token::NON_SPECIAL(value)) => {}
+        Some(token) => {}
+        None => {}
     }
     MalAtom {}
 }
