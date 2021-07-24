@@ -16,7 +16,7 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
             tokenizer.next();
             return MalList::new(elements);
         } else {
-            panic!("Error missing right parenthesis");
+            panic!("Error read_list: missing end parenthesis for list {:?}", elements);
         }
 
         if let Some(Token::RPAREN) = tokenizer.peek() {
