@@ -4,8 +4,8 @@ use std::iter::Peekable;
 
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     match tokenizer.next() {
-        Some(token) if token != Token::LPAREN => {
-            panic!("Error read_list: Called without beginning left parenthesis.")
+        Some(token) if token != Token::LParen => {
+            panic!("Error read_list: Called without beginning left parenthesis, found {:?} instead", token)
         }
         _ => {}
     }
@@ -16,7 +16,7 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
 
         if let Some(form) = maybe_form {
             elements.push(form);
-        } else if let Some(Token::RPAREN) = tokenizer.peek() {
+        } else if let Some(Token::RParen) = tokenizer.peek() {
             tokenizer.next();
             return MalList::new(elements);
         } else {
@@ -26,7 +26,7 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
             );
         }
 
-        if let Some(Token::RPAREN) = tokenizer.peek() {
+        if let Some(Token::RParen) = tokenizer.peek() {
             tokenizer.next();
             return MalList::new(elements);
         }
@@ -42,7 +42,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
     let maybe_next = tokenizer.peek();
 
     match maybe_next {
-        Some(Token::LPAREN) => Some(MalType::List(read_list(tokenizer))),
+        Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
         Some(_) => Some(MalType::Atom(read_atom(tokenizer))),
         None => None,
     }
@@ -50,14 +50,14 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
 fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
     match tokenizer.next() {
-        Some(Token::NON_SPECIAL(value)) => {
+        Some(Token::NonSpecial(value)) => {
             if let Ok(number) = value.parse::<isize>() {
                 MalAtom::Int(number)
             } else {
                 MalAtom::Symbol(value)
             }
         },
-        Some(token) => {
+        Some(_) => {
             MalAtom::Symbol(String::from(""))
         },
         None => panic!("read_atom called with next token == none"),
@@ -76,7 +76,7 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "Error read_list: Called without beginning left parenthesis.")]
+    #[should_panic(expected = "Error read_list: Called without beginning left parenthesis, found")]
     fn read_list_no_begin_paren() {
         let input = String::from("1, 2, 3, 4)");
         let tokenizer = Tokenizer::new(&input);

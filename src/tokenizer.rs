@@ -3,20 +3,20 @@ use std::str::Chars;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
-    AT,
-    CARAT,
-    LBRACE,
-    LCURLY,
-    LPAREN,
-    NON_SPECIAL(String),
-    QUASIQUOTE,
-    QUOTE,
-    RBRACE,
-    RCURLY,
-    RPAREN,
-    SPLICE_UNQUOTE,
-    STR(String),
-    TILDE,
+    At,
+    Carat,
+    LBrace,
+    LCurly,
+    LParen,
+    NonSpecial(String),
+    Quasiquote,
+    Quote,
+    RBrace,
+    RCurly,
+    RParen,
+    SpliceUnquote,
+    Str(String),
+    Tilde,
 }
 
 pub struct Tokenizer<'a> {
@@ -45,21 +45,21 @@ impl Iterator for Tokenizer<'_> {
                 ' ' | '\n' | '\t' | ',' => continue,
                 '~' => {
                     if self.input.next_if(|&x| x == '@').is_some() {
-                        return Some(Token::SPLICE_UNQUOTE);
+                        return Some(Token::SpliceUnquote);
                     } else {
-                        return Some(Token::TILDE);
+                        return Some(Token::Tilde);
                     }
                 }
-                '[' => return Some(Token::LBRACE),
-                ']' => return Some(Token::RBRACE),
-                '{' => return Some(Token::LCURLY),
-                '}' => return Some(Token::RCURLY),
-                '(' => return Some(Token::LPAREN),
-                ')' => return Some(Token::RPAREN),
-                '`' => return Some(Token::QUASIQUOTE),
-                '\'' => return Some(Token::QUOTE),
-                '^' => return Some(Token::CARAT),
-                '@' => return Some(Token::AT),
+                '[' => return Some(Token::LBrace),
+                ']' => return Some(Token::RBrace),
+                '{' => return Some(Token::LCurly),
+                '}' => return Some(Token::RCurly),
+                '(' => return Some(Token::LParen),
+                ')' => return Some(Token::RParen),
+                '`' => return Some(Token::Quasiquote),
+                '\'' => return Some(Token::Quote),
+                '^' => return Some(Token::Carat),
+                '@' => return Some(Token::At),
                 '"' => {
                     let mut data: Vec<char> = Vec::new();
                     data.push(c);
@@ -70,7 +70,7 @@ impl Iterator for Tokenizer<'_> {
                         // Reached end of string because previous character was not escaping the double quotes.
                         if val == '"' {
                             if data.len() > 0 && *data.last().unwrap() != '\\' {
-                                return Some(Token::STR(data.into_iter().collect()));
+                                return Some(Token::Str(data.into_iter().collect()));
                             }
                         }
                         maybe_val = self.input.next()
@@ -106,7 +106,7 @@ impl Iterator for Tokenizer<'_> {
                             || val == ','
                             || val == ';'
                         {
-                            return Some(Token::NON_SPECIAL(data.into_iter().collect()));
+                            return Some(Token::NonSpecial(data.into_iter().collect()));
                         } else {
                             self.input.next();
                             data.push(val);
@@ -114,7 +114,7 @@ impl Iterator for Tokenizer<'_> {
 
                         maybe_val = self.input.peek();
                     }
-                    return Some(Token::NON_SPECIAL(data.into_iter().collect()));
+                    return Some(Token::NonSpecial(data.into_iter().collect()));
                 }
             }
         }
@@ -143,23 +143,23 @@ mod tests {
     #[test]
     fn brace_like_things() {
         let mut t = Tokenizer::new("[]{}()");
-        assert!(matches!(t.next(), Some(Token::LBRACE)));
-        assert!(matches!(t.next(), Some(Token::RBRACE)));
-        assert!(matches!(t.next(), Some(Token::LCURLY)));
-        assert!(matches!(t.next(), Some(Token::RCURLY)));
-        assert!(matches!(t.next(), Some(Token::LPAREN)));
-        assert!(matches!(t.next(), Some(Token::RPAREN)));
+        assert!(matches!(t.next(), Some(Token::LBrace)));
+        assert!(matches!(t.next(), Some(Token::RBrace)));
+        assert!(matches!(t.next(), Some(Token::LCurly)));
+        assert!(matches!(t.next(), Some(Token::RCurly)));
+        assert!(matches!(t.next(), Some(Token::LParen)));
+        assert!(matches!(t.next(), Some(Token::RParen)));
         assert!(matches!(t.next(), None));
     }
 
     #[test]
     fn special_chars() {
         let mut t = Tokenizer::new("~@@~\'`");
-        assert!(matches!(t.next(), Some(Token::SPLICE_UNQUOTE)));
-        assert!(matches!(t.next(), Some(Token::AT)));
-        assert!(matches!(t.next(), Some(Token::TILDE)));
-        assert!(matches!(t.next(), Some(Token::QUOTE)));
-        assert!(matches!(t.next(), Some(Token::QUASIQUOTE)));
+        assert!(matches!(t.next(), Some(Token::SpliceUnquote)));
+        assert!(matches!(t.next(), Some(Token::At)));
+        assert!(matches!(t.next(), Some(Token::Tilde)));
+        assert!(matches!(t.next(), Some(Token::Quote)));
+        assert!(matches!(t.next(), Some(Token::Quasiquote)));
         assert!(matches!(t.next(), None));
     }
 
@@ -184,7 +184,7 @@ mod tests {
         let input = "\"VEEERY BALANCED DOUBLE QUOTES\"";
         let mut t = Tokenizer::new(&input);
 
-        if let Some(Token::STR(data)) = t.next() {
+        if let Some(Token::Str(data)) = t.next() {
             assert_eq!(input, data);
         } else {
             panic!();
@@ -199,7 +199,7 @@ mod tests {
         let expected = ["true", "false", "nil", "variable_name", "a", "1234", "-123"];
         for e in expected {
             let nxt = t.next();
-            if let Some(Token::NON_SPECIAL(data)) = nxt {
+            if let Some(Token::NonSpecial(data)) = nxt {
                 assert_eq!(e, data);
             } else {
                 panic!("Next token {:?} did not match expected form.", nxt);
@@ -212,17 +212,17 @@ mod tests {
         let input = "(hello world this is a list)";
         let mut t = Tokenizer::new(&input);
 
-        assert!(matches!(t.next(), Some(Token::LPAREN)));
+        assert!(matches!(t.next(), Some(Token::LParen)));
         let expected = ["hello", "world", "this", "is", "a", "list"];
         for e in expected {
             let nxt = t.next();
-            if let Some(Token::NON_SPECIAL(data)) = nxt {
+            if let Some(Token::NonSpecial(data)) = nxt {
                 assert_eq!(e, data);
             } else {
                 panic!("Next token {:?} did not match expected form.", nxt);
             }
         }
-        assert!(matches!(t.next(), Some(Token::RPAREN)));
+        assert!(matches!(t.next(), Some(Token::RParen)));
         assert!(matches!(t.next(), None));
     }
 
@@ -230,17 +230,17 @@ mod tests {
     fn commas_as_whitespace() {
         let input = "(1 2, 3,,,,),,";
         let mut t = Tokenizer::new(&input);
-        assert!(matches!(t.next(), Some(Token::LPAREN)));
+        assert!(matches!(t.next(), Some(Token::LParen)));
         let expected = ["1", "2", "3"];
         for e in expected {
             let nxt = t.next();
-            if let Some(Token::NON_SPECIAL(data)) = nxt {
+            if let Some(Token::NonSpecial(data)) = nxt {
                 assert_eq!(e, data);
             } else {
                 panic!("Next token {:?} did not match expected form.", nxt);
             }
         }
-        assert!(matches!(t.next(), Some(Token::RPAREN)));
+        assert!(matches!(t.next(), Some(Token::RParen)));
         assert!(matches!(t.next(), None));
     }
 
@@ -248,10 +248,10 @@ mod tests {
     fn hash_maps() {
         let input = "{ \"a\" 1 }";
         let mut t = Tokenizer::new(&input);
-        assert!(matches!(t.next(), Some(Token::LCURLY)));
-        assert!(matches!(t.next(), Some(Token::STR(_))));
-        assert!(matches!(t.next(), Some(Token::NON_SPECIAL(_))));
-        assert!(matches!(t.next(), Some(Token::RCURLY)));
+        assert!(matches!(t.next(), Some(Token::LCurly)));
+        assert!(matches!(t.next(), Some(Token::Str(_))));
+        assert!(matches!(t.next(), Some(Token::NonSpecial(_))));
+        assert!(matches!(t.next(), Some(Token::RCurly)));
         assert!(matches!(t.next(), None));
     }
 }
