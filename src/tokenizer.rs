@@ -8,13 +8,13 @@ pub enum Token {
     LBRACE,
     LCURLY,
     LPAREN,
-    NONSPECIAL(String),
+    NON_SPECIAL(String),
     QUASIQUOTE,
     QUOTE,
     RBRACE,
     RCURLY,
     RPAREN,
-    SPLICEUNQUOTE,
+    SPLICE_UNQUOTE,
     STR(String),
     TILDE,
 }
@@ -22,6 +22,7 @@ pub enum Token {
 pub struct Tokenizer<'a> {
     input: Peekable<Chars<'a>>,
 }
+
 impl Tokenizer<'_> {
     pub fn new(input: &str) -> Tokenizer {
         Tokenizer {
@@ -47,7 +48,7 @@ impl Iterator for Tokenizer<'_> {
                 ',' => continue,
                 '~' => {
                     if self.input.next_if(|&x| x == '@').is_some() {
-                        return Some(Token::SPLICEUNQUOTE);
+                        return Some(Token::SPLICE_UNQUOTE);
                     } else {
                         return Some(Token::TILDE);
                     }
@@ -108,7 +109,7 @@ impl Iterator for Tokenizer<'_> {
                             || val == ','
                             || val == ';'
                         {
-                            return Some(Token::NONSPECIAL(data.into_iter().collect()));
+                            return Some(Token::NON_SPECIAL(data.into_iter().collect()));
                         } else {
                             self.input.next();
                             data.push(val);
@@ -116,7 +117,7 @@ impl Iterator for Tokenizer<'_> {
 
                         maybe_val = self.input.peek();
                     }
-                    return Some(Token::NONSPECIAL(data.into_iter().collect()));
+                    return Some(Token::NON_SPECIAL(data.into_iter().collect()));
                 }
             }
         }
@@ -157,7 +158,7 @@ mod tests {
     #[test]
     fn special_chars() {
         let mut t = Tokenizer::new("~@@~\'`");
-        assert!(matches!(t.next(), Some(Token::SPLICEUNQUOTE)));
+        assert!(matches!(t.next(), Some(Token::SPLICE_UNQUOTE)));
         assert!(matches!(t.next(), Some(Token::AT)));
         assert!(matches!(t.next(), Some(Token::TILDE)));
         assert!(matches!(t.next(), Some(Token::QUOTE)));
@@ -201,7 +202,7 @@ mod tests {
         let expected = ["true", "false", "nil", "variable_name", "a"];
         for e in expected {
             let nxt = t.next();
-            if let Some(Token::NONSPECIAL(data)) = nxt {
+            if let Some(Token::NON_SPECIAL(data)) = nxt {
                 assert_eq!(e, data);
             } else {
                 panic!("Next token {:?} did not match expected form.", nxt);
@@ -218,7 +219,7 @@ mod tests {
         let expected = ["hello", "world", "this", "is", "a", "list"];
         for e in expected {
             let nxt = t.next();
-            if let Some(Token::NONSPECIAL(data)) = nxt {
+            if let Some(Token::NON_SPECIAL(data)) = nxt {
                 assert_eq!(e, data);
             } else {
                 panic!("Next token {:?} did not match expected form.", nxt);

@@ -45,15 +45,14 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
 
     match tokenizer.next() {
-        Some(Token::NONSPECIAL(_)) => {
+        Some(Token::NON_SPECIAL(value)) => {
             
         },
-        Some(_) => {},
+        Some(token) => panic!(""),
         None => {},
     }
     MalAtom {}
 }
-
 
 #[cfg(test)]
 mod tests {
