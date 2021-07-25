@@ -33,9 +33,9 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     }
 }
 
-pub fn read_str(input: &str) {
+pub fn read_str(input: &str) -> Option<MalType> {
     let tokenizer = Tokenizer::new(&input);
-    read_form(&mut tokenizer.peekable());
+    read_form(&mut tokenizer.peekable())
 }
 
 pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
@@ -43,6 +43,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
     match maybe_next {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
+        Some(Token::RParen) => None,
         Some(_) => Some(MalType::Atom(read_atom(tokenizer))),
         None => None,
     }
@@ -57,8 +58,8 @@ fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
                 MalAtom::Symbol(value)
             }
         },
-        Some(_) => {
-            MalAtom::Symbol(String::from(""))
+        Some(token) => {
+            panic!("read_atom called with unsupported token {:?}", token);
         },
         None => panic!("read_atom called with next token == none"),
     }
