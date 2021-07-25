@@ -5,7 +5,10 @@ use std::iter::Peekable;
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     match tokenizer.next() {
         Some(token) if token != Token::LParen => {
-            panic!("Error read_list: Called without beginning left parenthesis, found {:?} instead", token)
+            panic!(
+                "Error read_list: Called without beginning left parenthesis, found {:?} instead",
+                token
+            )
         }
         _ => {}
     }
@@ -57,11 +60,21 @@ fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
             } else {
                 MalAtom::Symbol(value)
             }
-        },
-        Some(Token::Str(value)) => MalAtom::Str(value),
+        }
+        Some(Token::Str(value)) => {
+            if value == "nil" {
+                MalAtom::Nil
+            } else if value == "true" {
+                MalAtom::True
+            } else if value == "false" {
+                MalAtom::False
+            } else {
+                MalAtom::Str(value)
+            }
+        }
         Some(token) => {
             panic!("read_atom called with unsupported token {:?}", token);
-        },
+        }
         None => panic!("read_atom called with next token == none"),
     }
 }

@@ -54,6 +54,9 @@ pub enum MalAtom {
     Int(isize),
     Symbol(String),
     Str(String),
+    Nil,
+    False,
+    True,
 }
 
 impl fmt::Display for MalAtom {
@@ -62,6 +65,9 @@ impl fmt::Display for MalAtom {
             MalAtom::Int(value) => write!(f, "{}", value),
             MalAtom::Symbol(value) => write!(f, "{}", value),
             MalAtom::Str(value) => write!(f, "{}", value),
+            MalAtom::Nil => write!(f, "nil"),
+            MalAtom::False => write!(f, "false"),
+            MalAtom::True => write!(f, "true"),
         }
     }
 }
