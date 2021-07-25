@@ -1,8 +1,10 @@
 use std::fmt;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq)]
 pub enum MalType {
     List(MalList),
+    HashMap(MalHashMap),
     Atom(MalAtom),
 }
 
@@ -11,7 +13,31 @@ impl fmt::Display for MalType {
         match self {
             MalType::List(mal_list) => mal_list.fmt(f),
             MalType::Atom(mal_atom) => mal_atom.fmt(f),
+            MalType::HashMap(mal_hash_map) => mal_hash_map.fmt(f),
         }
+    }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct MalHashMap {
+    map: HashMap<String, MalType>,
+}
+
+impl MalHashMap {
+    pub fn new(map: HashMap<String, MalType>) -> MalHashMap {
+        MalHashMap { map }
+    }
+}
+
+impl fmt::Display for MalHashMap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{{ ")?;
+        for (k, v) in self.map.iter() {
+            write!(f, "{} ", k)?;
+            v.fmt(f)?;
+            write!(f, " ")?;
+        }
+        write!(f, "}}")
     }
 }
 

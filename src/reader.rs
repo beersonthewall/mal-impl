@@ -1,16 +1,15 @@
 use super::tokenizer::{Token, Tokenizer};
-use super::types::{MalAtom, MalList, MalType};
+use super::types::{MalAtom, MalHashMap, MalList, MalType};
 use std::iter::Peekable;
+use std::collections::HashMap;
 
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
-    match tokenizer.next() {
-        Some(token) if token != Token::LParen => {
-            panic!(
-                "Error read_list: Called without beginning left parenthesis, found {:?} instead",
-                token
-            )
-        }
-        _ => {}
+    let token = tokenizer.next();
+    if !matches!(Some(Token::LParen), token) {
+        panic!(
+            "Error read_list: Called without beginning left parenthesis, found {:?} instead",
+            token
+        )
     }
 
     let mut elements = Vec::<MalType>::new();
@@ -36,6 +35,52 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     }
 }
 
+fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalHashMap {
+    let next = tokenizer.next();
+    if !matches!(Some(Token::LCurly), next) {
+        panic!(
+            "Error read_map: Called without beginning left curly brace, found {:?} instead.",
+            next
+        );
+    }
+
+    let mut map = HashMap::<String, MalType>::new();
+    loop {
+        let maybe_key = read_form(tokenizer);
+        let mut key = None;
+
+        if let Some(MalType::Atom(MalAtom::Symbol(value))) = maybe_key {
+            key = Some(value);
+        } else if let Some(MalType::Atom(MalAtom::Str(value))) = maybe_key {
+            key = Some(value);
+        } else if let None = maybe_key {
+            // Possibly empty map.
+        } else {
+            panic!("Error read_map: Missing or invalid key value. {:?}", maybe_key);
+        }
+
+        let maybe_value = read_form(tokenizer);
+        if key.is_some() && maybe_value.is_some() {
+            map.insert(key.unwrap(), maybe_value.unwrap());
+        } else if key.is_none() && maybe_value.is_none() {
+            let next = tokenizer.next();
+            if !matches!(Some(Token::RCurly), next) {
+                panic!("Error read_map: missing ending right curly brace, found {:?} instead.", next);
+            }
+
+            return MalHashMap::new(HashMap::new());
+        } else {
+            panic!("Error read_map: no valid key, value pair found.");
+        }
+
+
+        if let Some(Token::RCurly) = tokenizer.peek() {
+            // End of the line
+            return MalHashMap::new(map);
+        }
+    }
+}
+
 pub fn read_str(input: &str) -> Option<MalType> {
     let tokenizer = Tokenizer::new(&input);
     read_form(&mut tokenizer.peekable())
@@ -47,6 +92,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
     match maybe_next {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
         Some(Token::RParen) => None,
+        Some(Token::LCurly) => Some(MalType::HashMap(read_map(tokenizer))),
         Some(_) => Some(MalType::Atom(read_atom(tokenizer))),
         None => None,
     }
