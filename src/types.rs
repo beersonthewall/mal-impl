@@ -22,7 +22,12 @@ pub struct MalList {
 
 impl fmt::Display for MalList {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "( ")?;
+
+        if self.elements.is_empty() {
+            return write!(f, "()");
+        }
+
+        write!(f, "(")?;
         let mut itr = self.elements.iter();
 
         if let Some(elem) = itr.next() {
@@ -30,11 +35,11 @@ impl fmt::Display for MalList {
         }
 
         for elem in itr {
-            write!(f, ", ")?;
+            write!(f, ",")?;
             elem.fmt(f)?;
         }
         
-        write!(f, " )")
+        write!(f, ")")
     }
 }
 
