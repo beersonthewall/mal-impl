@@ -69,7 +69,7 @@ impl Iterator for Tokenizer<'_> {
                         data.push(val);
                         // Reached end of string because previous character was not escaping the double quotes.
                         if val == '"' {
-                            if data.len() > 0 && *data.last().unwrap() != '\\' {
+                            if data.len() > 0 && data[data.len() - 2] != '\\' {
                                 return Some(Token::Str(data.into_iter().collect()));
                             }
                         }
