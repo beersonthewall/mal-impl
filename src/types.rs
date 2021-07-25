@@ -53,13 +53,15 @@ impl MalList {
 pub enum MalAtom {
     Int(isize),
     Symbol(String),
+    Str(String),
 }
 
 impl fmt::Display for MalAtom {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            MalAtom::Int(integer) => write!(f, "{}", integer),
-            MalAtom::Symbol(string) => write!(f, "{}", string),
+            MalAtom::Int(value) => write!(f, "{}", value),
+            MalAtom::Symbol(value) => write!(f, "{}", value),
+            MalAtom::Str(value) => write!(f, "{}", value),
         }
     }
 }

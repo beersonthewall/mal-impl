@@ -58,6 +58,7 @@ fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
                 MalAtom::Symbol(value)
             }
         },
+        Some(Token::Str(value)) => MalAtom::Str(value),
         Some(token) => {
             panic!("read_atom called with unsupported token {:?}", token);
         },
