@@ -5,5 +5,15 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "mal_impl"
+path = "src/lib.rs"
+doc = true
+
+[[bin]]
+name = "mal-impl"
+path = "src/main.rs"
+doc = false
+
 [dependencies]
 rustyline = "8.2"
