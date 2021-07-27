@@ -91,6 +91,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
     match maybe_next {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
+        Some(Token::RParen) => None,
         Some(Token::LCurly) => Some(MalType::Map(read_map(tokenizer))),
         Some(Token::NonSpecial(value)) => read_non_special(tokenizer),
         Some(Token::Str(_)) => read_string(tokenizer),
