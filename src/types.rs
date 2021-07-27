@@ -4,32 +4,42 @@ use std::collections::HashMap;
 #[derive(Debug, PartialEq)]
 pub enum MalType {
     List(MalList),
-    HashMap(MalHashMap),
-    Atom(MalAtom),
+    Map(MalMap),
+    Int(isize),
+    Symbol(String),
+    Str(String),
+    Nil,
+    False,
+    True,
 }
 
 impl fmt::Display for MalType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             MalType::List(mal_list) => mal_list.fmt(f),
-            MalType::Atom(mal_atom) => mal_atom.fmt(f),
-            MalType::HashMap(mal_hash_map) => mal_hash_map.fmt(f),
+            MalType::Map(mal_map) => mal_map.fmt(f),
+            MalType::Int(value) => write!(f, "{}", value),
+            MalType::Symbol(value) => write!(f, "{}", value),
+            MalType::Str(value) => write!(f, "{}", value),
+            MalType::Nil => write!(f, "nil"),
+            MalType::False => write!(f, "false"),
+            MalType::True => write!(f, "true"),
         }
     }
 }
 
 #[derive(Debug, PartialEq)]
-pub struct MalHashMap {
+pub struct MalMap {
     map: HashMap<String, MalType>,
 }
 
-impl MalHashMap {
-    pub fn new(map: HashMap<String, MalType>) -> MalHashMap {
-        MalHashMap { map }
+impl MalMap {
+    pub fn new(map: HashMap<String, MalType>) -> MalMap {
+        MalMap { map }
     }
 }
 
-impl fmt::Display for MalHashMap {
+impl fmt::Display for MalMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{{ ")?;
         for (k, v) in self.map.iter() {
@@ -43,7 +53,7 @@ impl fmt::Display for MalHashMap {
 
 #[derive(Debug, PartialEq)]
 pub struct MalList {
-    elements: Vec<MalType>,
+    pub elements: Vec<MalType>,
 }
 
 impl fmt::Display for MalList {
@@ -72,28 +82,5 @@ impl fmt::Display for MalList {
 impl MalList {
     pub fn new(elements: Vec<MalType>) -> MalList {
         MalList { elements }
-    }
-}
-
-#[derive(Debug, PartialEq)]
-pub enum MalAtom {
-    Int(isize),
-    Symbol(String),
-    Str(String),
-    Nil,
-    False,
-    True,
-}
-
-impl fmt::Display for MalAtom {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            MalAtom::Int(value) => write!(f, "{}", value),
-            MalAtom::Symbol(value) => write!(f, "{}", value),
-            MalAtom::Str(value) => write!(f, "{}", value),
-            MalAtom::Nil => write!(f, "nil"),
-            MalAtom::False => write!(f, "false"),
-            MalAtom::True => write!(f, "true"),
-        }
     }
 }

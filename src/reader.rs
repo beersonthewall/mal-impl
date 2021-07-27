@@ -1,5 +1,5 @@
 use super::tokenizer::{Token, Tokenizer};
-use super::types::{MalAtom, MalHashMap, MalList, MalType};
+use super::types::{MalList, MalType, MalMap};
 use std::iter::Peekable;
 use std::collections::HashMap;
 
@@ -35,7 +35,7 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     }
 }
 
-fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalHashMap {
+fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalMap {
     let next = tokenizer.next();
     if !matches!(Some(Token::LCurly), next) {
         panic!(
@@ -49,9 +49,9 @@ fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalHashMap {
         let maybe_key = read_form(tokenizer);
         let mut key = None;
 
-        if let Some(MalType::Atom(MalAtom::Symbol(value))) = maybe_key {
+        if let Some(MalType::Symbol(value)) = maybe_key {
             key = Some(value);
-        } else if let Some(MalType::Atom(MalAtom::Str(value))) = maybe_key {
+        } else if let Some(MalType::Str(value)) = maybe_key {
             key = Some(value);
         } else if let None = maybe_key {
             // Possibly empty map.
@@ -68,7 +68,7 @@ fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalHashMap {
                 panic!("Error read_map: missing ending right curly brace, found {:?} instead.", next);
             }
 
-            return MalHashMap::new(HashMap::new());
+            return MalMap::new(HashMap::new());
         } else {
             panic!("Error read_map: no valid key, value pair found.");
         }
@@ -76,7 +76,7 @@ fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalHashMap {
 
         if let Some(Token::RCurly) = tokenizer.peek() {
             // End of the line
-            return MalHashMap::new(map);
+            return MalMap::new(map);
         }
     }
 }
@@ -91,38 +91,36 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
     match maybe_next {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
-        Some(Token::RParen) => None,
-        Some(Token::LCurly) => Some(MalType::HashMap(read_map(tokenizer))),
-        Some(_) => Some(MalType::Atom(read_atom(tokenizer))),
+        Some(Token::LCurly) => Some(MalType::Map(read_map(tokenizer))),
+        Some(Token::NonSpecial(value)) => read_non_special(tokenizer),
+        Some(Token::Str(_)) => read_string(tokenizer),
+        Some(tkn) => panic!("Error read_form: unsupported token {:?}", tkn),
         None => None,
     }
 }
 
-fn read_atom(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalAtom {
-    match tokenizer.next() {
-        Some(Token::NonSpecial(value)) => {
-            if let Ok(number) = value.parse::<isize>() {
-                MalAtom::Int(number)
-            } else {
-                MalAtom::Symbol(value)
-            }
+fn read_non_special(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
+    if let Some(Token::NonSpecial(value)) = tokenizer.next() {
+        if let Ok(number) = value.parse::<isize>() {
+            return Some(MalType::Int(number));
+        } else if value == "nil" {
+            return Some(MalType::Nil);
+        } else if value == "true" {
+            return Some(MalType::True);
+        } else if value == "false" {
+            return Some(MalType::False);
+        } else {
+            return Some(MalType::Symbol(value.to_string()));
         }
-        Some(Token::Str(value)) => {
-            if value == "nil" {
-                MalAtom::Nil
-            } else if value == "true" {
-                MalAtom::True
-            } else if value == "false" {
-                MalAtom::False
-            } else {
-                MalAtom::Str(value)
-            }
-        }
-        Some(token) => {
-            panic!("read_atom called with unsupported token {:?}", token);
-        }
-        None => panic!("read_atom called with next token == none"),
     }
+    None
+}
+
+fn read_string(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
+    if let Some(Token::Str(value)) = tokenizer.next() {
+        return Some(MalType::Str(value));
+    }
+    None
 }
 
 #[cfg(test)]
