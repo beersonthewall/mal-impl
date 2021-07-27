@@ -93,6 +93,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
         Some(Token::RParen) => None,
         Some(Token::LCurly) => Some(MalType::Map(read_map(tokenizer))),
+        Some(Token::RCurly) => None,
         Some(Token::NonSpecial(value)) => read_non_special(tokenizer),
         Some(Token::Str(_)) => read_string(tokenizer),
         Some(tkn) => panic!("Error read_form: unsupported token {:?}", tkn),
