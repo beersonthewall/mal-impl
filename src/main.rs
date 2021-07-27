@@ -3,7 +3,11 @@ extern crate rustyline;
 mod reader;
 mod tokenizer;
 mod types;
+mod eval;
+mod env;
 
+use env::Env;
+use eval::eval_ast;
 use reader::read_str;
 use types::MalType;
 
@@ -12,7 +16,10 @@ pub fn read(input: &str) -> Option<MalType> {
 }
 
 fn eval(input: Option<MalType>) -> Option<MalType> {
-    input
+    if let Some(ast) = input {
+        return Some(eval_ast(ast, &mut Env::new()));
+    }
+    None
 }
 
 fn print(input: Option<MalType>) {
@@ -24,7 +31,7 @@ fn print(input: Option<MalType>) {
 fn main() {
     let mut rl = rustyline::Editor::<()>::new();
     loop {
-        match rl.readline("user> ") {
+        match rl.readline("=> ") {
             Ok(line) => {
                 rl.add_history_entry(line.as_str());
                 print(eval(read(&line)));

@@ -30,19 +30,19 @@ impl fmt::Display for MalType {
 
 #[derive(Debug, PartialEq)]
 pub struct MalMap {
-    map: HashMap<String, MalType>,
+    pub mappings: HashMap<String, MalType>,
 }
 
 impl MalMap {
-    pub fn new(map: HashMap<String, MalType>) -> MalMap {
-        MalMap { map }
+    pub fn new(mappings: HashMap<String, MalType>) -> MalMap {
+        MalMap { mappings }
     }
 }
 
 impl fmt::Display for MalMap {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{{ ")?;
-        for (k, v) in self.map.iter() {
+        for (k, v) in self.mappings.iter() {
             write!(f, "{} ", k)?;
             v.fmt(f)?;
             write!(f, " ")?;
