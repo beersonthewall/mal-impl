@@ -21,12 +21,16 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
         } else if let Some(Token::RParen) = tokenizer.peek() {
             tokenizer.next();
             return MalList::new(elements);
-        } else {
+        } else if matches!(tokenizer.peek(), None) {
+            // read_form returning 'None' is an overloaded value. It means both no more forms
+            // and we hit some token that it cannot handle (e.g. closing paren) but doesn't
+            // want to panic!() on. For example consider the list ( {"a" 1} 2 3 4)
+            // We only want to panic in the case where we're out of forms and out of tokens.
             panic!(
                 "Error read_list: missing end parenthesis for list {:?}",
                 elements
             );
-        }
+        } 
 
         if let Some(Token::RParen) = tokenizer.peek() {
             tokenizer.next();
@@ -55,7 +59,7 @@ fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalMap {
             key = Some(value);
         } else if let None = maybe_key {
             // Possibly empty map.
-        } else {
+        } else if matches!(tokenizer.peek(), None){
             panic!("Error read_map: Missing or invalid key value. {:?}", maybe_key);
         }
 
@@ -91,14 +95,19 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
 
     match maybe_next {
         Some(Token::LParen) => Some(MalType::List(read_list(tokenizer))),
-        Some(Token::RParen) => None,
+        Some(Token::RParen) => consume_and_forget(tokenizer),
         Some(Token::LCurly) => Some(MalType::Map(read_map(tokenizer))),
-        Some(Token::RCurly) => None,
+        Some(Token::RCurly) => consume_and_forget(tokenizer),
         Some(Token::NonSpecial(_)) => read_non_special(tokenizer),
         Some(Token::Str(_)) => read_string(tokenizer),
         Some(tkn) => panic!("Error read_form: unsupported token {:?}", tkn),
         None => None,
     }
+}
+
+fn consume_and_forget(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
+    tokenizer.next();
+    None
 }
 
 fn read_non_special(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
