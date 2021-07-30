@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
     let token = tokenizer.next();
-    if !matches!(Some(Token::LParen), token) {
+    if !matches!(token, Some(Token::LParen)) {
         panic!(
             "Error read_list: Called without beginning left parenthesis, found {:?} instead",
             token
@@ -37,7 +37,7 @@ fn read_list(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalList {
 
 fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalMap {
     let next = tokenizer.next();
-    if !matches!(Some(Token::LCurly), next) {
+    if !matches!(next, Some(Token::LCurly)) {
         panic!(
             "Error read_map: Called without beginning left curly brace, found {:?} instead.",
             next
@@ -64,7 +64,7 @@ fn read_map(tokenizer: &mut Peekable<Tokenizer<'_>>) -> MalMap {
             map.insert(key.unwrap(), maybe_value.unwrap());
         } else if key.is_none() && maybe_value.is_none() {
             let next = tokenizer.next();
-            if !matches!(Some(Token::RCurly), next) {
+            if !matches!(next, Some(Token::RCurly)) {
                 panic!("Error read_map: missing ending right curly brace, found {:?} instead.", next);
             }
 
@@ -94,7 +94,7 @@ pub fn read_form(tokenizer: &mut Peekable<Tokenizer<'_>>) -> Option<MalType> {
         Some(Token::RParen) => None,
         Some(Token::LCurly) => Some(MalType::Map(read_map(tokenizer))),
         Some(Token::RCurly) => None,
-        Some(Token::NonSpecial(value)) => read_non_special(tokenizer),
+        Some(Token::NonSpecial(_)) => read_non_special(tokenizer),
         Some(Token::Str(_)) => read_string(tokenizer),
         Some(tkn) => panic!("Error read_form: unsupported token {:?}", tkn),
         None => None,
